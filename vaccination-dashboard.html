@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Vaccination Dashboard</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Inter', 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #f8fafc, #eef2f7);
+            color: #0f172a;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header styles */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        /* Tab styles */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #cbd5e1;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 0 8px 8px 8px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Form controls */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .toolbar label {
+            font-weight: 500;
+            color: #334155;
+        }
+        
+        select, input, button {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: white;
+        }
+        
+        button {
+            background-color: #111827;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 8px 14px;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background-color: #1f2937;
+        }
+        
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Text area styles */
+        .text-area {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: white;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            min-height: 200px;
+        }
+        
+        .split-container {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .split-panel {
+            flex: 1;
+        }
+        
+        /* Status indicators */
+        .status-meets {
+            color: #10b981;
+            font-weight: 500;
+        }
+        
+        .status-below {
+            color: #ef4444;
+            font-weight: 500;
+        }
+        
+        .status-missing {
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        /* Footer */
+        footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #cbd5e1;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Global Vaccination Dashboard</h1>
+            <p>A web-based visualization of vaccination coverage data</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="mission">1A — Mission</div>
+            <div class="tab" data-tab="shallow">2A — Shallow Glance</div>
+            <div class="tab" data-tab="deep">3A — Deep Dive</div>
+        </div>
+        
+        <!-- Mission Tab -->
+        <div id="mission" class="tab-content active">
+            <h2>Global Vaccination — Mission</h2>
+            <textarea class="text-area" readonly>
+Goal: Help people make sense of vaccination coverage without jargon.
+
+How to use:
+  1) Go to 2A tab to filter by Year / Disease / Region and see coverage tables.
+  2) Go to 3A tab to compare countries against a herd-immunity threshold.
+  3) Export tables to CSV for reporting.
+
+Threshold defaults (illustrative): Measles 95%, Polio 90%, DTP3 90%.
+Missing values are surfaced and excluded from averages.
+            </textarea>
+            <footer>
+                <p>Personas: NGO Coordinator, School Teacher — plain English + quick exports.</p>
+            </footer>
+        </div>
+        
+        <!-- Shallow Glance Tab -->
+        <div id="shallow" class="tab-content">
+            <h2>Shallow Glance — Filter and Explore</h2>
+            
+            <div class="toolbar">
+                <label for="year-select">Year:</label>
+                <select id="year-select">
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                </select>
+                
+                <label for="disease-select">Disease:</label>
+                <select id="disease-select">
+                    <option value="Measles">Measles</option>
+                    <option value="Polio">Polio</option>
+                    <option value="DTP3">DTP3</option>
+                </select>
+                
+                <label for="region-select">Region:</label>
+                <select id="region-select">
+                    <option value="All">All</option>
+                    <option value="Africa">Africa</option>
+                    <option value="Americas">Americas</option>
+                    <option value="EMRO">EMRO</option>
+                    <option value="Europe">Europe</option>
+                    <option value="SEARO">SEARO</option>
+                    <option value="WPRO">WPRO</option>
+                </select>
+                
+                <label for="search-input">Search:</label>
+                <input type="text" id="search-input" placeholder="Search country...">
+                
+                <button id="apply-filter">Apply</button>
+                <button id="export-countries">Export Countries CSV</button>
+            </div>
+            
+            <div class="split-container">
+                <div class="split-panel">
+                    <h3>Country Data</h3>
+                    <div id="country-table-container"></div>
+                </div>
+                <div class="split-panel">
+                    <h3>Region Summary</h3>
+                    <div id="region-summary-container"></div>
+                </div>
+            </div>
+            
+            <footer>
+                <p>Footnote: Missing values are displayed as 'Missing' and excluded from averages.</p>
+            </footer>
+        </div>
+        
+        <!-- Deep Dive Tab -->
+        <div id="deep" class="tab-content">
+            <h2>Deep Dive — Compare Against Threshold</h2>
+            
+            <div class="toolbar">
+                <label for="deep-year">Year:</label>
+                <select id="deep-year">
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                </select>
+                
+                <label for="deep-disease">Disease:</label>
+                <select id="deep-disease">
+                    <option value="Measles">Measles</option>
+                    <option value="Polio">Polio</option>
+                    <option value="DTP3">DTP3</option>
+                </select>
+                
+                <span id="threshold-display">Threshold: —%</span>
+                
+                <button id="deep-apply">Apply</button>
+                <button id="deep-export">Export CSV</button>
+            </div>
+            
+            <div id="deep-table-container"></div>
+            
+            <footer>
+                <p>Method: Compare each country's coverage against the fixed threshold for the chosen disease.<br>
+                Missing values: flagged as 'Missing' and excluded from ranking calculations.</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Data model
+        const DISEASES = ["Measles", "Polio", "DTP3"];
+        const REGIONS = ["Africa", "Americas", "EMRO", "Europe", "SEARO", "WPRO"];
+        const YEARS = [2023, 2022, 2021];
+        
+        const ROWS = [
+            {country: "Australia", region: "WPRO", year: 2023, disease: "Measles", vaccinationRate: 95.0},
+            {country: "India", region: "SEARO", year: 2023, disease: "Measles", vaccinationRate: 92.0},
+            {country: "Kenya", region: "Africa", year: 2023, disease: "Measles", vaccinationRate: 86.0},
+            {country: "Brazil", region: "Americas", year: 2023, disease: "Measles", vaccinationRate: 88.0},
+            {country: "Germany", region: "Europe", year: 2023, disease: "Measles", vaccinationRate: 93.0},
+            {country: "Nepal", region: "SEARO", year: 2023, disease: "Measles", vaccinationRate: null},
+            {country: "Australia", region: "WPRO", year: 2023, disease: "Polio", vaccinationRate: 94.0},
+            {country: "India", region: "SEARO", year: 2023, disease: "Polio", vaccinationRate: 90.0},
+            {country: "Brazil", region: "Americas", year: 2023, disease: "Polio", vaccinationRate: 91.0},
+            {country: "Germany", region: "Europe", year: 2023, disease: "Polio", vaccinationRate: 93.0}
+        ];
+        
+        // Helper functions
+        function herdThreshold(disease) {
+            switch (disease) {
+                case "Measles": return 95.0;
+                case "Polio": return 90.0;
+                default: return 90.0;
+            }
+        }
+        
+        function filterData(year, disease, regionOrAll, query) {
+            const q = query ? query.trim().toLowerCase() : "";
+            return ROWS
+                .filter(r => r.year == year)
+                .filter(r => r.disease === disease)
+                .filter(r => regionOrAll === "All" || r.region === regionOrAll)
+                .filter(r => !q || r.country.toLowerCase().includes(q))
+                .sort((a, b) => {
+                    const av = a.vaccinationRate === null ? -1 : a.vaccinationRate;
+                    const bv = b.vaccinationRate === null ? -1 : b.vaccinationRate;
+                    return bv - av;
+                });
+        }
+        
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Refresh data if needed
+                if (tabId === 'shallow') {
+                    refreshShallowGlance();
+                } else if (tabId === 'deep') {
+                    refreshDeepDive();
+                }
+            });
+        });
+        
+        // Table rendering functions
+        function renderTable(containerId, headers, rows) {
+            const container = document.getElementById(containerId);
+            
+            if (rows.length === 0) {
+                container.innerHTML = '<p>No data available for the selected filters.</p>';
+                return;
+            }
+            
+            let html = '<table><thead><tr>';
+            
+            // Create header row
+            headers.forEach(header => {
+                html += `<th>${header}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            // Create data rows
+            rows.forEach(row => {
+                html += '<tr>';
+                row.forEach((cell, index) => {
+                    let cellClass = '';
+                    if (headers[index] === 'Status') {
+                        if (cell === 'Meets threshold') cellClass = 'status-meets';
+                        else if (cell === 'Below threshold') cellClass = 'status-below';
+                        else if (cell === 'Missing') cellClass = 'status-missing';
+                    }
+                    html += `<td class="${cellClass}">${cell}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        // Shallow Glance functionality
+        function refreshShallowGlance() {
+            const year = document.getElementById('year-select').value;
+            const disease = document.getElementById('disease-select').value;
+            const region = document.getElementById('region-select').value;
+            const query = document.getElementById('search-input').value;
+            
+            const filtered = filterData(parseInt(year), disease, region, query);
+            const threshold = herdThreshold(disease);
+            
+            // Prepare country table data
+            const countryRows = filtered.map(row => {
+                let status, coverageStr;
+                if (row.vaccinationRate === null) {
+                    status = 'Missing';
+                    coverageStr = '—';
+                } else {
+                    const ok = row.vaccinationRate >= threshold;
+                    status = ok ? 'Meets threshold' : 'Below threshold';
+                    coverageStr = row.vaccinationRate.toString();
+                }
+                return [row.country, row.region, coverageStr, status];
+            });
+            
+            renderTable('country-table-container', ['Country', 'Region', 'Coverage (%)', 'Status'], countryRows);
+            
+            // Prepare region summary data
+            const byRegion = {};
+            filtered.forEach(row => {
+                if (!byRegion[row.region]) {
+                    byRegion[row.region] = [];
+                }
+                byRegion[row.region].push(row);
+            });
+            
+            const summaryRows = Object.entries(byRegion).map(([region, rows]) => {
+                const count = rows.length;
+                const present = rows.filter(r => r.vaccinationRate !== null).length;
+                const sum = rows
+                    .filter(r => r.vaccinationRate !== null)
+                    .reduce((acc, r) => acc + r.vaccinationRate, 0);
+                
+                const avg = present > 0 ? (sum / present).toFixed(1) : '—';
+                return [region, avg, `${count} (${count - present})`];
+            });
+            
+            renderTable('region-summary-container', ['Region', 'Avg coverage (%)', 'Rows (missing)'], summaryRows);
+        }
+        
+        // Deep Dive functionality
+        function refreshDeepDive() {
+            const year = document.getElementById('deep-year').value;
+            const disease = document.getElementById('deep-disease').value;
+            const threshold = herdThreshold(disease);
+            
+            document.getElementById('threshold-display').textContent = `Threshold: ${threshold}%`;
+            
+            const filtered = filterData(parseInt(year), disease, "All", "");
+            
+            const tableRows = filtered.map(row => {
+                let status, coverageStr;
+                if (row.vaccinationRate === null) {
+                    status = 'Missing';
+                    coverageStr = '—';
+                } else {
+                    const ok = row.vaccinationRate >= threshold;
+                    status = ok ? 'Meets threshold' : 'Below threshold';
+                    coverageStr = row.vaccinationRate.toString();
+                }
+                return [row.country, row.region, coverageStr, status];
+            });
+            
+            renderTable('deep-table-container', ['Country', 'Region', 'Coverage (%)', 'Status'], tableRows);
+        }
+        
+        // CSV export functionality
+        function exportToCSV(headers, rows, filename) {
+            let csvContent = headers.join(',') + '\n';
+            
+            rows.forEach(row => {
+                const escapedRow = row.map(cell => {
+                    if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+                        return '"' + cell.replace(/"/g, '""') + '"';
+                    }
+                    return cell;
+                });
+                csvContent += escapedRow.join(',') + '\n';
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Event listeners
+        document.getElementById('apply-filter').addEventListener('click', refreshShallowGlance);
+        document.getElementById('deep-apply').addEventListener('click', refreshDeepDive);
+        
+        document.getElementById('export-countries').addEventListener('click', () => {
+            const year = document.getElementById('year-select').value;
+            const disease = document.getElementById('disease-select').value;
+            
+            // Get current country table data
+            const table = document.querySelector('#country-table-container table');
+            if (!table) return;
+            
+            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
+            const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+                Array.from(tr.querySelectorAll('td')).map(td => td.textContent)
+            );
+            
+            exportToCSV(headers, rows, `2A_${disease}_${year}.csv`);
+        });
+        
+        document.getElementById('deep-export').addEventListener('click', () => {
+            const year = document.getElementById('deep-year').value;
+            const disease = document.getElementById('deep-disease').value;
+            
+            // Get current deep dive table data
+            const table = document.querySelector('#deep-table-container table');
+            if (!table) return;
+            
+            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
+            const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+                Array.from(tr.querySelectorAll('td')).map(td => td.textContent)
+            );
+            
+            exportToCSV(headers, rows, `3A_${disease}_${year}.csv`);
+        });
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshShallowGlance();
+            refreshDeepDive();
+        });
+    </script>
+</body>
+</html>
